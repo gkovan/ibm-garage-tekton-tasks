@@ -68,6 +68,9 @@ spec:
     - name: lint-dockerfile
       description: Flag indication that Dockerfile will be linted
       default: "true"
+    - name: dockerfile
+      description: File name of dockerfile
+      default: ./Dockerfile      
   results:
     - name: git-url
     - name: git-revision
@@ -92,6 +95,7 @@ spec:
     - name: scan-ibm
     - name: ace-project
     - name: dockerfile-lint
+    - name: dockerfile
   volumes:
     - name: source
       emptyDir: {}
@@ -156,7 +160,7 @@ spec:
         echo -n "$(params.tools-image)">$(results.tools-image.path)
         echo -n "$(params.js-image)">$(results.js-image.path)
         echo -n "$(params.ace-project)">$(results.ace-project.path)
-
+        echo -n "$(params.dockerfile)">$(results.dockerfile.path)
 
         REGISTRY_SERVER="$(params.image-server)"
         REGISTRY_NAMESPACE="$(params.image-namespace)"
