@@ -1,0 +1,44 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: cosign
+  labels:
+    app.kubernetes.io/version: "0.1.0"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+spec:
+  description: >-
+    These tasks make it possible to use cosign within your Tekton pipelines
+
+    cosign is a tool for signing and verifying software artifacts.
+  workspaces:
+  - name: source
+  params:
+  - name: command
+    type: string
+    default: sign
+  - name: APP_IMAGE
+    type: string
+  steps:
+  - name: cosign
+    env:
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: cosign-keys
+            key: cosign.key
+    image: gcr.io/projectsigstore/cosign/ci/cosign:v1.0.0
+    script: |
+      #!/busybox/env /busybox/sh
+      CMD="cosign sign -key ${cosign.key} $(params.APP_IMAGE)"
+      echo "${CMD}"
+      APP_IMAGE="$(params.image-server)/$(params.image-namespace)/$(params.image-repository):$(params.image-tag)"
+      echo "${APP_IMAGE}"
+      ERR_MSG="Failed to sign $(APP_IMAGE)"
+      ${CMD} &> result
+      err=$?
+      cat result
+      if [[ ${err} -ne 0 ]]; then
+        echo "${ERR_MSG}"
+        exit 1
+      fi
