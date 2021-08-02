@@ -37,6 +37,8 @@ spec:
     - name: STORAGE_DRIVER
       description: Set buildah storage driver
       default: overlay
+  results:
+      - name: APP_IMAGE      
   volumes:
     - name: varlibcontainers
       emptyDir: {}
@@ -121,3 +123,4 @@ spec:
 
         set -x
         buildah --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest ${APP_IMAGE} docker://${APP_IMAGE}
+        echo -n "${APP_IMAGE}">$(results.APP_IMAGE.path)

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: ibm-gk-general
+  name: ibm-base-image
   annotations:
 spec:
   params:
@@ -12,6 +12,8 @@ spec:
       default: master
     - name: dockerfile
       default: ./Dockerfile
+    - name: image-url
+      default: docker.io/gkovan/ztsc-base-quarkus-image   
     - name: scan-image
       description: Enable the pipeline to scan the image for vulnerabilities
       default: "false"
@@ -37,7 +39,9 @@ spec:
         - name: lint-dockerfile
           value: $(params.lint-dockerfile)
         - name: dockerfile
-          value: $(params.dockerfile)        
+          value: $(params.dockerfile)
+        - name: image-url
+          value: $(params.image-url)       
     # - name: code-lint
     #   taskRef:
     #     name: ibm-sonar-test
