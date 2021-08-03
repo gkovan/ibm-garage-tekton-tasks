@@ -124,3 +124,27 @@ spec:
         set -x
         buildah --storage-driver=$(params.STORAGE_DRIVER) push --tls-verify=$(params.TLSVERIFY) --digestfile ./image-digest ${APP_IMAGE} docker://${APP_IMAGE}
         echo -n "${APP_IMAGE}">$(results.APP_IMAGE.path)
+  - name: cosign
+    env:
+      - name: COSIGN_KEY
+        valueFrom:
+          secretKeyRef:
+            name: cosign-keys
+            key: cosign.key
+    image: gcr.io/projectsigstore/cosign/ci/cosign:v0.5.0
+    script: |
+      #!/busybox/env /busybox/sh
+      APP_IMAGE="$(params.image-server)/$(params.image-namespace)/$(params.image-repository):$(params.image-tag)"
+      cat ${COSIGN_KEY} >> cosign.key
+      CMD="cosign sign -key cosign.key $(APP_IMAGE)"
+      echo "${CMD}"
+      echo "Attempting to sign image url:"
+      echo "$(APP_IMAGE)"
+      ERR_MSG="Failed to sign $(APP_IMAGE)"
+      ${CMD} &> result
+      err=$?
+      cat result
+      if [[ ${err} -ne 0 ]]; then
+        echo "${ERR_MSG}"
+        exit 1
+      fi
